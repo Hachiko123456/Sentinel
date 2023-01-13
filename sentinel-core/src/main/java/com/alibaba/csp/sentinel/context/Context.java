@@ -58,21 +58,25 @@ public class Context {
 
     /**
      * Context name.
+     * context的名称
      */
     private final String name;
 
     /**
      * The entrance node of current invocation tree.
+     * 当前调用链的入口节点
      */
     private DefaultNode entranceNode;
 
     /**
      * Current processing entry.
+     * 此时此刻在当前调用链执行的Entry对象
      */
     private Entry curEntry;
 
     /**
      * The origin of this context (usually indicate different invokers, e.g. service consumer name or origin IP).
+     * 调用源名称
      */
     private String origin = "";
 
@@ -108,10 +112,16 @@ public class Context {
         return name;
     }
 
+    /**
+     * 获取当前节点
+     */
     public Node getCurNode() {
         return curEntry == null ? null : curEntry.getCurNode();
     }
 
+    /**
+     * 设置当前节点
+     */
     public Context setCurNode(Node node) {
         this.curEntry.setCurNode(node);
         return this;
@@ -172,9 +182,7 @@ public class Context {
     }
 
     /**
-     * Get the parent {@link Node} of the current.
-     *
-     * @return the parent node of the current.
+     * 获取最新节点
      */
     public Node getLastNode() {
         if (curEntry != null && curEntry.getLastNode() != null) {
@@ -184,6 +192,9 @@ public class Context {
         }
     }
 
+    /**
+     * 获取当前节点
+     */
     public Node getOriginNode() {
         return curEntry == null ? null : curEntry.getOriginNode();
     }

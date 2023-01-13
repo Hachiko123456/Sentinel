@@ -54,22 +54,26 @@ public class DegradeRule extends AbstractRule {
     }
 
     /**
+     * 熔断降级的模式，有平均响应时间、异常比例、异常数
      * Circuit breaking strategy (0: average RT, 1: exception ratio, 2: exception count).
      */
     private int grade = RuleConstant.DEGRADE_GRADE_RT;
 
     /**
+     * 发生熔断降级的阈值
      * Threshold count.
      */
     private double count;
 
     /**
+     * 发生熔断降级后持续的时间
      * Recovery timeout (in seconds) when circuit breaker opens. After the timeout, the circuit breaker will
      * transform to half-open state for trying a few requests.
      */
     private int timeWindow;
 
     /**
+     * 每秒连续进入的请求发生异常不熔断降级的最小阈值
      * Minimum number of requests (in an active statistic time span) that can trigger circuit breaking.
      *
      * @since 1.7.0
@@ -77,6 +81,7 @@ public class DegradeRule extends AbstractRule {
     private int minRequestAmount = RuleConstant.DEGRADE_DEFAULT_MIN_REQUEST_AMOUNT;
 
     /**
+     * 超时请求比例阈值
      * The threshold of slow request ratio in RT mode.
      */
     private double slowRatioThreshold = 1.0d;

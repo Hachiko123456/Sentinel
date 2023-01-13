@@ -55,18 +55,27 @@ public abstract class Entry implements AutoCloseable {
 
     private static final Object[] OBJECTS0 = new Object[0];
 
+    /**
+     * 创建Entry的时间戳
+     */
     private final long createTimestamp;
     private long completeTimestamp;
 
+    /**
+     * Entry当前在哪个节点
+     */
     private Node curNode;
     /**
-     * {@link Node} of the specific origin, Usually the origin is the Service Consumer.
+     * Entry的调用源节点
      */
     private Node originNode;
 
     private Throwable error;
     private BlockException blockError;
 
+    /**
+     * Entry关联的资源信息
+     */
     protected final ResourceWrapper resourceWrapper;
 
     public Entry(ResourceWrapper resourceWrapper) {

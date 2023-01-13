@@ -73,9 +73,11 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
             completeTime = TimeUtil.currentTimeMillis();
         }
         long rt = completeTime - entry.getCreateTimestamp();
+        // 超过最大执行时间，慢请求数+1
         if (rt > maxAllowedRt) {
             counter.slowCount.add(1);
         }
+        // 总数+1
         counter.totalCount.add(1);
 
         handleStateChangeWhenThresholdExceeded(rt);
@@ -85,18 +87,21 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
         if (currentState.get() == State.OPEN) {
             return;
         }
-        
+
         if (currentState.get() == State.HALF_OPEN) {
             // In detecting request
             // TODO: improve logic for half-open recovery
+            // 如果熔断器是半开状态，且这次的请求时间超时，则开启熔断
             if (rt > maxAllowedRt) {
                 fromHalfOpenToOpen(1.0d);
             } else {
+                // 否则关闭熔断
                 fromHalfOpenToClose();
             }
             return;
         }
 
+        // 如果熔断器是关闭状态
         List<SlowRequestCounter> counters = slidingCounter.values();
         long slowCount = 0;
         long totalCount = 0;
@@ -108,9 +113,11 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
             return;
         }
         double currentRatio = slowCount * 1.0d / totalCount;
+        // 超时请求比例超过阈值，开启熔断器
         if (currentRatio > maxSlowRequestRatio) {
             transformToOpen(currentRatio);
         }
+        // 超时请求达到百分百，开启熔断器
         if (Double.compare(currentRatio, maxSlowRequestRatio) == 0 &&
                 Double.compare(maxSlowRequestRatio, SLOW_REQUEST_RATIO_MAX_VALUE) == 0) {
             transformToOpen(currentRatio);

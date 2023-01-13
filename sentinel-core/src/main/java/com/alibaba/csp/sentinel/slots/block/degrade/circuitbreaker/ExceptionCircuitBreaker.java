@@ -34,8 +34,11 @@ import static com.alibaba.csp.sentinel.slots.block.RuleConstant.DEGRADE_GRADE_EX
  */
 public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
 
+    // 策略，异常数量还是异常比例
     private final int strategy;
+    // 最小请求数
     private final int minRequestAmount;
+    // 阈值
     private final double threshold;
 
     private final LeapArray<SimpleErrorCounter> stat;
@@ -68,10 +71,13 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
             return;
         }
         Throwable error = entry.getError();
+        // 获取当前窗口的计数器
         SimpleErrorCounter counter = stat.currentWindow().value();
+        // 发生异常，异常数量+1
         if (error != null) {
             counter.getErrorCount().add(1);
         }
+        // 总数+1
         counter.getTotalCount().add(1);
 
         handleStateChangeWhenThresholdExceeded(error);
@@ -84,14 +90,17 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
         
         if (currentState.get() == State.HALF_OPEN) {
             // In detecting request
+            // 本次请求没有发生异常，关掉熔断器
             if (error == null) {
                 fromHalfOpenToClose();
             } else {
+                // 本次请求发生异常，打开熔断器
                 fromHalfOpenToOpen(1.0d);
             }
             return;
         }
-        
+
+        // 获取所有窗口的计数器
         List<SimpleErrorCounter> counters = stat.values();
         long errCount = 0;
         long totalCount = 0;
@@ -99,14 +108,17 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
             errCount += counter.errorCount.sum();
             totalCount += counter.totalCount.sum();
         }
+        // 请求总数小于最小阈值，不做熔断处理
         if (totalCount < minRequestAmount) {
             return;
         }
+        // 比较异常数量或者比例
         double curCount = errCount;
         if (strategy == DEGRADE_GRADE_EXCEPTION_RATIO) {
             // Use errorRatio
             curCount = errCount * 1.0d / totalCount;
         }
+        // 如果超过阈值，则开启熔断器
         if (curCount > threshold) {
             transformToOpen(curCount);
         }

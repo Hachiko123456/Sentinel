@@ -40,11 +40,26 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  */
 public abstract class LeapArray<T> {
 
+    /**
+     * 单个滑动时间窗口的大小
+     */
     protected int windowLengthInMs;
+
+    /**
+     * 总窗口数
+     */
     protected int sampleCount;
+
+    /**
+     * 总时间大小
+     */
     protected int intervalInMs;
+
     private double intervalInSecond;
 
+    /**
+     * 采样的时间窗口数组
+     */
     protected final AtomicReferenceArray<WindowWrap<T>> array;
 
     /**

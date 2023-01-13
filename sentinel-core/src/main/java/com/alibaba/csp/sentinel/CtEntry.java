@@ -34,10 +34,24 @@ import com.alibaba.csp.sentinel.util.function.BiConsumer;
  */
 class CtEntry extends Entry {
 
+    /**
+     * 当前Entry的父Entry
+     */
     protected Entry parent = null;
+
+    /**
+     * 当前Entry的子Entry
+     */
     protected Entry child = null;
 
+    /**
+     * 当前的调用链
+     */
     protected ProcessorSlot<Object> chain;
+
+    /**
+     * 当前的Context
+     */
     protected Context context;
     protected LinkedList<BiConsumer<Context, Entry>> exitHandlers;
 
@@ -58,6 +72,7 @@ class CtEntry extends Entry {
         if (parent != null) {
             ((CtEntry) parent).child = this;
         }
+        // 设置Context当前的Entry对象
         context.setCurEntry(this);
     }
 

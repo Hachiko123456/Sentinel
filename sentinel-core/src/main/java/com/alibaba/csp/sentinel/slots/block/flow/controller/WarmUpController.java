@@ -63,13 +63,20 @@ import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
  */
 public class WarmUpController implements TrafficShapingController {
 
+    // FlowRule中设置的阈值
     protected double count;
+    // 冷却因子，默认为3
     private int coldFactor;
+    // 预警token数量
     protected int warningToken = 0;
+    // 最大token数量
     private int maxToken;
+    // 斜率，即生成速率，用于计算当前生成token的时间间隔
     protected double slope;
 
+    // 令牌桶中剩余令牌数
     protected AtomicLong storedTokens = new AtomicLong(0);
+    // 最后一次添加令牌的时间戳
     protected AtomicLong lastFilledTime = new AtomicLong(0);
 
     public WarmUpController(double count, int warmUpPeriodInSec, int coldFactor) {
@@ -92,15 +99,17 @@ public class WarmUpController implements TrafficShapingController {
 
         // thresholdPermits = 0.5 * warmupPeriod / stableInterval.
         // warningToken = 100;
+        // 预警token数量
         warningToken = (int)(warmUpPeriodInSec * count) / (coldFactor - 1);
         // / maxPermits = thresholdPermits + 2 * warmupPeriod /
         // (stableInterval + coldInterval)
         // maxToken = 200
+        // 最大token数量
         maxToken = warningToken + (int)(2 * warmUpPeriodInSec * count / (1.0 + coldFactor));
 
         // slope
-        // slope = (coldIntervalMicros - stableIntervalMicros) / (maxPermits
-        // - thresholdPermits);
+        // slope = (coldIntervalMicros - stableIntervalMicros) / (maxPermits - thresholdPermits);
+        // 斜率
         slope = (coldFactor - 1.0) / count / (maxToken - warningToken);
 
     }
@@ -115,20 +124,22 @@ public class WarmUpController implements TrafficShapingController {
         long passQps = (long) node.passQps();
 
         long previousQps = (long) node.previousPassQps();
+        // 生产令牌
         syncToken(previousQps);
 
-        // 开始计算它的斜率
-        // 如果进入了警戒线，开始调整他的qps
         long restToken = storedTokens.get();
+        // 如果大于警戒线，则说明预热还没结束
         if (restToken >= warningToken) {
             long aboveToken = restToken - warningToken;
-            // 消耗的速度要比warning快，但是要比慢
             // current interval = restToken*slope+1/count
+            // 1s能够产生的token数量
             double warningQps = Math.nextUp(1.0 / (aboveToken * slope + 1.0 / count));
+            // token的消费速度是否小于生成速度
             if (passQps + acquireCount <= warningQps) {
                 return true;
             }
         } else {
+            // 过了预热期，直接判断消费速度是否小于规则中设置的阈值
             if (passQps + acquireCount <= count) {
                 return true;
             }

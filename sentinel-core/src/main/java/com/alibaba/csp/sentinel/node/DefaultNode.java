@@ -46,7 +46,7 @@ public class DefaultNode extends StatisticNode {
     private ResourceWrapper id;
 
     /**
-     * The list of all child nodes.
+     * 子节点列表，在同一个Context中多次获取资源的时候，会将所有的节点保存到里面
      */
     private volatile Set<Node> childList = new HashSet<>();
 

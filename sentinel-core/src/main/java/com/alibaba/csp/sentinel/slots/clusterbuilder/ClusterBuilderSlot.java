@@ -71,6 +71,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
 
     private static final Object lock = new Object();
 
+    // ClusterNode直接作为类变量，因为ClusterNode对应的纬度是Resource，而一个Resource只会创建一个ClusterBuilderSlot，因此直接把ClusterNode声明为类变量
     private volatile ClusterNode clusterNode = null;
 
     @Override
